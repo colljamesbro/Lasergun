@@ -59,6 +59,67 @@ flyButton.Font = Enum.Font.SourceSans
 flyButton.TextSize = 24
 flyButton.Parent = sideTab
 
+-- Fly functlocal player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Create the ScreenGui container
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = playerGui
+
+-- Create a Frame that will act as the side tab
+local sideTab = Instance.new("Frame")
+sideTab.Size = UDim2.new(0, 200, 0, 400)  -- Size of the tab
+sideTab.Position = UDim2.new(1, -210, 0, 50)  -- Position it on the right side
+sideTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+sideTab.Visible = false  -- Initially set the tab as invisible
+sideTab.Parent = screenGui
+
+-- Create a button to toggle the tab visibility (now called "Just Script")
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 200, 0, 50)  -- Button size
+toggleButton.Position = UDim2.new(0.5, -100, 0.5, -25)  -- Center button on screen
+toggleButton.Text = "Just Script"  -- Renamed button text
+toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)  -- Blue color
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
+toggleButton.Font = Enum.Font.SourceSans  -- Font style
+toggleButton.TextSize = 24  -- Text size
+toggleButton.Parent = screenGui
+
+-- Function to toggle the visibility of the side tab and button
+local function toggleTabVisibility()
+    sideTab.Visible = not sideTab.Visible  -- Toggle the side tab visibility
+    toggleButton.Visible = not toggleButton.Visible  -- Toggle the button visibility
+end
+
+-- Create a button to close the tab (optional)
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 50, 0, 50)
+closeButton.Position = UDim2.new(1, -60, 0, 10)
+closeButton.Text = "X"
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for close button
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
+closeButton.Font = Enum.Font.SourceSans
+closeButton.TextSize = 24
+closeButton.Parent = sideTab
+
+-- Function to close the tab by clicking the close button
+closeButton.MouseButton1Click:Connect(function()
+    sideTab.Visible = false
+    toggleButton.Visible = true  -- Show the button again when the tab is closed
+end)
+
+-- Fly button inside the side tab
+local flyButton = Instance.new("TextButton")
+flyButton.Size = UDim2.new(0, 200, 0, 50)  -- Button size
+flyButton.Position = UDim2.new(0, 0, 0, 80)  -- Position inside the tab
+flyButton.Text = "Fly"  -- Button text
+flyButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- Green color for fly button
+flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
+flyButton.Font = Enum.Font.SourceSans
+flyButton.TextSize = 24
+flyButton.Parent = sideTab
+
 -- Fly function
 local flying = false
 local bodyVelocity = nil
@@ -137,5 +198,27 @@ UIS.InputBegan:Connect(function(input, gameProcessed)
     -- Only respond to the F key and not to other inputs (like in the chat)
     if input.KeyCode == Enum.KeyCode.F and not gameProcessed then
         toggleTabVisibility()  -- Toggle visibility of the tab and button
+    end
+end)
+
+-- Make the toggle button draggable
+local dragging, dragInput, mousePos, offset = false, nil, nil, nil
+
+toggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        offset = toggleButton.Position - UDim2.new(0, input.Position.X, 0, input.Position.Y)
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging then
+        mousePos = input.Position
+        toggleButton.Position = UDim2.new(0, mousePos.X - offset.X.Offset, 0, mousePos.Y - offset.Y.Offset)
     end
 end)

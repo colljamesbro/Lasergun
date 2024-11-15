@@ -1,72 +1,49 @@
 local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
-local killDamage = 100  -- High enough damage to kill most players
+local playerGui = player:WaitForChild("PlayerGui")
 
--- Function to create the LaserGun tool
-local function createLaserGun()
-    -- Create the Tool
-    local laserTool = Instance.new("Tool")
-    laserTool.Name = "LaserGun"
-    laserTool.RequiresHandle = true
-    laserTool.Parent = player.Backpack
+-- Create the ScreenGui container
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = playerGui
 
-    -- Create the handle for the LaserGun tool
-    local handle = Instance.new("Part")
-    handle.Name = "Handle"
-    handle.Size = Vector3.new(1, 1, 1)
-    handle.BrickColor = BrickColor.new("Really black")
-    handle.Material = Enum.Material.Metal
-    handle.CanCollide = false
-    handle.Parent = laserTool
+-- Create a Frame that will act as the side tab
+local sideTab = Instance.new("Frame")
+sideTab.Size = UDim2.new(0, 200, 0, 400)  -- Size of the tab
+sideTab.Position = UDim2.new(1, -210, 0, 50)  -- Position it on the right side
+sideTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+sideTab.Visible = false  -- Initially set the tab as invisible
+sideTab.Parent = screenGui
 
-    -- Function to create a laser beam
-    local function createLaserBeam(origin, target)
-        local laserBeam = Instance.new("Part")
-        laserBeam.Size = Vector3.new(0.2, 0.2, (target - origin).magnitude)
-        laserBeam.CFrame = CFrame.new(origin, target) * CFrame.new(0, 0, -laserBeam.Size.Z / 2)
-        laserBeam.Anchored = true
-        laserBeam.CanCollide = false
-        laserBeam.BrickColor = BrickColor.new("Bright red")
-        laserBeam.Material = Enum.Material.Neon
-        laserBeam.Parent = workspace
+-- Create a button to toggle the tab visibility
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 200, 0, 50)  -- Button size
+toggleButton.Position = UDim2.new(0.5, -100, 0.5, -25)  -- Center button on screen
+toggleButton.Text = "Toggle Tab"  -- Button text
+toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)  -- Blue color
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
+toggleButton.Font = Enum.Font.SourceSans  -- Font style
+toggleButton.TextSize = 24  -- Text size
+toggleButton.Parent = screenGui
 
-        -- Add a light effect to the laser
-        local light = Instance.new("PointLight")
-        light.Brightness = 2
-        light.Range = 5
-        light.Color = Color3.new(1, 0, 0)
-        light.Parent = laserBeam
-
-        -- Remove the laser beam after a short delay
-        game.Debris:AddItem(laserBeam, 0.1)
-    end
-
-    -- Function to handle firing the laser
-    local function fireLaser()
-        -- Get the starting position of the laser from the handle
-        local origin = handle.Position
-
-        -- Get the target position from the mouse
-        local target = mouse.Hit.p
-
-        -- Create the laser beam visual
-        createLaserBeam(origin, target)
-
-        -- Raycasting to detect a hit
-        local ray = Ray.new(origin, (target - origin).unit * 500)  -- Adjust laser range
-        local hitPart, hitPosition = workspace:FindPartOnRay(ray, player.Character)
-
-        -- Check if the laser hit something
-        if hitPart and hitPart.Parent:FindFirstChild("Humanoid") then
-            -- Deal high damage to the humanoid to ensure it kills
-            local humanoid = hitPart.Parent:FindFirstChild("Humanoid")
-            humanoid.Health = 0  -- Set health to 0 to kill the humanoid
-        end
-    end
-
-    -- Connect the tool to the mouse click to fire the laser
-    laserTool.Activated:Connect(fireLaser)
+-- Create a function to toggle the visibility of the side tab
+local function toggleTab()
+    sideTab.Visible = not sideTab.Visible  -- Toggle visibility
 end
 
--- Call the function to create the laser gun
-createLaserGun()
+-- Connect the button click to toggle the tab visibility
+toggleButton.MouseButton1Click:Connect(toggleTab)
+
+-- Create a button to close the tab (optional)
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 50, 0, 50)
+closeButton.Position = UDim2.new(1, -60, 0, 10)
+closeButton.Text = "X"
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for close button
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
+closeButton.Font = Enum.Font.SourceSans
+closeButton.TextSize = 24
+closeButton.Parent = sideTab
+
+-- Function to close the tab
+closeButton.MouseButton1Click:Connect(function()
+    sideTab.Visible = false
+end)

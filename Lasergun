@@ -1,0 +1,55 @@
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+
+-- Variables for the laser tool
+local laserTool = script.Parent
+local damage = 20  -- Set damage amount for the laser
+
+-- Function to create the laser beam
+local function createLaserBeam(origin, target)
+    -- Create the laser Part
+    local laserBeam = Instance.new("Part")
+    laserBeam.Size = Vector3.new(0.2, 0.2, (target - origin).magnitude)  -- Length of the laser based on distance
+    laserBeam.CFrame = CFrame.new(origin, target) * CFrame.new(0, 0, -laserBeam.Size.Z / 2)
+    laserBeam.Anchored = true
+    laserBeam.CanCollide = false
+    laserBeam.BrickColor = BrickColor.new("Bright red")  -- Laser color
+    laserBeam.Material = Enum.Material.Neon
+    laserBeam.Parent = workspace
+
+    -- Add a light effect to the laser
+    local light = Instance.new("PointLight")
+    light.Brightness = 2
+    light.Range = 5
+    light.Color = Color3.new(1, 0, 0)  -- Red light color
+    light.Parent = laserBeam
+
+    -- Remove the laser beam after a short delay
+    game.Debris:AddItem(laserBeam, 0.1)
+end
+
+-- Function to handle firing the laser
+local function fireLaser()
+    -- Get the starting position of the laser (from the player’s head or tool handle)
+    local origin = laserTool.Handle.Position
+
+    -- Get the target position from the mouse
+    local target = mouse.Hit.p
+
+    -- Create the laser beam visual
+    createLaserBeam(origin, target)
+
+    -- Raycasting to detect a hit
+    local ray = Ray.new(origin, (target - origin).unit * 500)  -- Adjust laser range
+    local hitPart, hitPosition = workspace:FindPartOnRay(ray, player.Character)
+
+    -- Check if the laser hit something
+    if hitPart and hitPart.Parent:FindFirstChild("Humanoid") then
+        -- Deal damage to the humanoid
+        local humanoid = hitPart.Parent:FindFirstChild("Humanoid")
+        humanoid:TakeDamage(damage)
+    end
+end
+
+-- Connect the tool to the mouse click to fire the laser
+laserTool.Activated:Connect(fireLaser)

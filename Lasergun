@@ -1,5 +1,6 @@
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
 
 -- Create the ScreenGui container
 local screenGui = Instance.new("ScreenGui")
@@ -24,13 +25,11 @@ toggleButton.Font = Enum.Font.SourceSans  -- Font style
 toggleButton.TextSize = 24  -- Text size
 toggleButton.Parent = screenGui
 
--- Create a function to toggle the visibility of the side tab
-local function toggleTab()
-    sideTab.Visible = not sideTab.Visible  -- Toggle visibility
+-- Create a function to toggle the visibility of the side tab and button
+local function toggleTabVisibility()
+    sideTab.Visible = not sideTab.Visible  -- Toggle the side tab visibility
+    toggleButton.Visible = not toggleButton.Visible  -- Toggle the button visibility
 end
-
--- Connect the button click to toggle the tab visibility
-toggleButton.MouseButton1Click:Connect(toggleTab)
 
 -- Create a button to close the tab (optional)
 local closeButton = Instance.new("TextButton")
@@ -43,7 +42,100 @@ closeButton.Font = Enum.Font.SourceSans
 closeButton.TextSize = 24
 closeButton.Parent = sideTab
 
--- Function to close the tab
+-- Function to close the tab by clicking the close button
 closeButton.MouseButton1Click:Connect(function()
     sideTab.Visible = false
+    toggleButton.Visible = true  -- Show the button again when the tab is closed
+end)
+
+-- Fly button inside the side tab
+local flyButton = Instance.new("TextButton")
+flyButton.Size = UDim2.new(0, 200, 0, 50)  -- Button size
+flyButton.Position = UDim2.new(0, 0, 0, 80)  -- Position inside the tab
+flyButton.Text = "Fly"  -- Button text
+flyButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- Green color for fly button
+flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
+flyButton.Font = Enum.Font.SourceSans
+flyButton.TextSize = 24
+flyButton.Parent = sideTab
+
+-- Fly function
+local flying = false
+local bodyVelocity = nil
+local bodyGyro = nil
+
+local function toggleFly()
+    if flying then
+        -- Disable flying
+        flying = false
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+            bodyVelocity = nil
+        end
+        if bodyGyro then
+            bodyGyro:Destroy()
+            bodyGyro = nil
+        end
+    else
+        -- Enable flying
+        flying = true
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyGyro = Instance.new("BodyGyro")
+        
+        bodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
+        bodyVelocity.Velocity = Vector3.new(0, 50, 0)
+        bodyVelocity.Parent = character.HumanoidRootPart
+        
+        bodyGyro.MaxTorque = Vector3.new(400000, 400000, 400000)
+        bodyGyro.CFrame = character.HumanoidRootPart.CFrame
+        bodyGyro.Parent = character.HumanoidRootPart
+    end
+end
+
+flyButton.MouseButton1Click:Connect(toggleFly)
+
+-- Create a button to give a random weapon
+local weaponButton = Instance.new("TextButton")
+weaponButton.Size = UDim2.new(0, 200, 0, 50)  -- Button size
+weaponButton.Position = UDim2.new(0, 0, 1, -70)  -- Position at the bottom
+weaponButton.Text = "Random Weapon"  -- Button text
+weaponButton.BackgroundColor3 = Color3.fromRGB(255, 255, 0)  -- Yellow color for weapon button
+weaponButton.TextColor3 = Color3.fromRGB(0, 0, 0)  -- Black text color
+weaponButton.Font = Enum.Font.SourceSans
+weaponButton.TextSize = 24
+weaponButton.Parent = sideTab
+
+-- Function to give a random weapon
+local function giveRandomWeapon()
+    local weapons = {
+        "Classic Sword",
+        "Flintlock",
+        "Bloxburg Gun"
+    }
+    
+    local weapon = weapons[math.random(1, #weapons)]
+    
+    -- You can change these to any weapon models you want to add
+    if weapon == "Classic Sword" then
+        local sword = game.ReplicatedStorage:WaitForChild("ClassicSword"):Clone()
+        sword.Parent = player.Backpack
+    elseif weapon == "Flintlock" then
+        local flintlock = game.ReplicatedStorage:WaitForChild("Flintlock"):Clone()
+        flintlock.Parent = player.Backpack
+    elseif weapon == "Bloxburg Gun" then
+        local gun = game.ReplicatedStorage:WaitForChild("BloxburgGun"):Clone()
+        gun.Parent = player.Backpack
+    end
+end
+
+weaponButton.MouseButton1Click:Connect(giveRandomWeapon)
+
+-- Listen for key press to toggle the tab visibility (Press F)
+local UIS = game:GetService("UserInputService")
+
+UIS.InputBegan:Connect(function(input, gameProcessed)
+    -- Only respond to the F key and not to other inputs (like in the chat)
+    if input.KeyCode == Enum.KeyCode.F and not gameProcessed then
+        toggleTabVisibility()  -- Toggle visibility of the tab and button
+    end
 end)

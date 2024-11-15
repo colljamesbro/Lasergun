@@ -1,66 +1,72 @@
 local player = game.Players.LocalPlayer
 local mouse = player:GetMouse()
-local character = player.Character or player.CharacterAdded:Wait()
-local damage = 20  -- Amount of damage the laser does
+local damage = 20  -- Set the damage for the laser gun
 
--- Create the LaserGun tool
-local laserTool = Instance.new("Tool")
-laserTool.Name = "LaserGun"
-laserTool.RequiresHandle = true
-laserTool.Parent = player.Backpack
+-- Function to create the LaserGun tool
+local function createLaserGun()
+    -- Create the Tool
+    local laserTool = Instance.new("Tool")
+    laserTool.Name = "LaserGun"
+    laserTool.RequiresHandle = true
+    laserTool.Parent = player.Backpack
 
--- Create the handle for the LaserGun tool
-local handle = Instance.new("Part")
-handle.Name = "Handle"
-handle.Size = Vector3.new(1, 1, 1)
-handle.BrickColor = BrickColor.new("Really black")
-handle.Material = Enum.Material.Metal
-handle.Parent = laserTool
+    -- Create the handle for the LaserGun tool
+    local handle = Instance.new("Part")
+    handle.Name = "Handle"
+    handle.Size = Vector3.new(1, 1, 1)
+    handle.BrickColor = BrickColor.new("Really black")
+    handle.Material = Enum.Material.Metal
+    handle.CanCollide = false
+    handle.Parent = laserTool
 
--- Function to create the laser beam
-local function createLaserBeam(origin, target)
-    local laserBeam = Instance.new("Part")
-    laserBeam.Size = Vector3.new(0.2, 0.2, (target - origin).magnitude)
-    laserBeam.CFrame = CFrame.new(origin, target) * CFrame.new(0, 0, -laserBeam.Size.Z / 2)
-    laserBeam.Anchored = true
-    laserBeam.CanCollide = false
-    laserBeam.BrickColor = BrickColor.new("Bright red")
-    laserBeam.Material = Enum.Material.Neon
-    laserBeam.Parent = workspace
+    -- Function to create a laser beam
+    local function createLaserBeam(origin, target)
+        local laserBeam = Instance.new("Part")
+        laserBeam.Size = Vector3.new(0.2, 0.2, (target - origin).magnitude)
+        laserBeam.CFrame = CFrame.new(origin, target) * CFrame.new(0, 0, -laserBeam.Size.Z / 2)
+        laserBeam.Anchored = true
+        laserBeam.CanCollide = false
+        laserBeam.BrickColor = BrickColor.new("Bright red")
+        laserBeam.Material = Enum.Material.Neon
+        laserBeam.Parent = workspace
 
-    -- Add a light effect to the laser
-    local light = Instance.new("PointLight")
-    light.Brightness = 2
-    light.Range = 5
-    light.Color = Color3.new(1, 0, 0)
-    light.Parent = laserBeam
+        -- Add a light effect to the laser
+        local light = Instance.new("PointLight")
+        light.Brightness = 2
+        light.Range = 5
+        light.Color = Color3.new(1, 0, 0)
+        light.Parent = laserBeam
 
-    -- Remove the laser beam after a short delay
-    game.Debris:AddItem(laserBeam, 0.1)
-end
-
--- Function to handle firing the laser
-local function fireLaser()
-    -- Get the starting position of the laser (from the handle)
-    local origin = handle.Position
-
-    -- Get the target position from the mouse
-    local target = mouse.Hit.p
-
-    -- Create the laser beam visual
-    createLaserBeam(origin, target)
-
-    -- Raycasting to detect a hit
-    local ray = Ray.new(origin, (target - origin).unit * 500)
-    local hitPart, hitPosition = workspace:FindPartOnRay(ray, player.Character)
-
-    -- Check if the laser hit something
-    if hitPart and hitPart.Parent:FindFirstChild("Humanoid") then
-        -- Deal damage to the humanoid
-        local humanoid = hitPart.Parent:FindFirstChild("Humanoid")
-        humanoid:TakeDamage(damage)
+        -- Remove the laser beam after a short delay
+        game.Debris:AddItem(laserBeam, 0.1)
     end
+
+    -- Function to handle firing the laser
+    local function fireLaser()
+        -- Get the starting position of the laser from the handle
+        local origin = handle.Position
+
+        -- Get the target position from the mouse
+        local target = mouse.Hit.p
+
+        -- Create the laser beam visual
+        createLaserBeam(origin, target)
+
+        -- Raycasting to detect a hit
+        local ray = Ray.new(origin, (target - origin).unit * 500)  -- Adjust laser range
+        local hitPart, hitPosition = workspace:FindPartOnRay(ray, player.Character)
+
+        -- Check if the laser hit something
+        if hitPart and hitPart.Parent:FindFirstChild("Humanoid") then
+            -- Deal damage to the humanoid
+            local humanoid = hitPart.Parent:FindFirstChild("Humanoid")
+            humanoid:TakeDamage(damage)
+        end
+    end
+
+    -- Connect the tool to the mouse click to fire the laser
+    laserTool.Activated:Connect(fireLaser)
 end
 
--- Connect the tool to fire the laser when activated
-laserTool.Activated:Connect(fireLaser)
+-- Call the function to create the laser gun
+createLaserGun()

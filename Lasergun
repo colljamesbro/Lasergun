@@ -1,6 +1,6 @@
 local player = game.Players.LocalPlayer
 local mouse = player:GetMouse()
-local damage = 20  -- Set the damage for the laser gun
+local killDamage = 100  -- High enough damage to kill most players
 
 -- Function to create the LaserGun tool
 local function createLaserGun()
@@ -58,9 +58,9 @@ local function createLaserGun()
 
         -- Check if the laser hit something
         if hitPart and hitPart.Parent:FindFirstChild("Humanoid") then
-            -- Deal damage to the humanoid
+            -- Deal high damage to the humanoid to ensure it kills
             local humanoid = hitPart.Parent:FindFirstChild("Humanoid")
-            humanoid:TakeDamage(damage)
+            humanoid.Health = 0  -- Set health to 0 to kill the humanoid
         end
     end
 

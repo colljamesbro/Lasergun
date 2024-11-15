@@ -6,156 +6,121 @@ local character = player.Character or player.CharacterAdded:Wait()
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = playerGui
 
--- Create a Frame that will act as the side tab
+-- Create a Frame for the side tab
 local sideTab = Instance.new("Frame")
-sideTab.Size = UDim2.new(0, 200, 0, 400)  -- Size of the tab
-sideTab.Position = UDim2.new(1, -210, 0, 50)  -- Position it on the right side
+sideTab.Size = UDim2.new(0, 200, 0, 400)
+sideTab.Position = UDim2.new(1, -210, 0, 50)
 sideTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-sideTab.Visible = false  -- Initially set the tab as invisible
+sideTab.Visible = false
 sideTab.Parent = screenGui
 
--- Create a button to toggle the tab visibility (now called "Just Script")
+-- Create a button to toggle the tab visibility
 local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0, 200, 0, 50)  -- Button size
-toggleButton.Position = UDim2.new(0.5, -100, 0.5, -25)  -- Center button on screen
-toggleButton.Text = "Just Script"  -- Renamed button text
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)  -- Blue color
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
-toggleButton.Font = Enum.Font.SourceSans  -- Font style
-toggleButton.TextSize = 24  -- Text size
+toggleButton.Size = UDim2.new(0, 200, 0, 50)
+toggleButton.Position = UDim2.new(0.5, -100, 0.5, -25)
+toggleButton.Text = "Just Script"
+toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)  -- Blue button
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Parent = screenGui
 
--- Function to toggle the visibility of the side tab and button
-local function toggleTabVisibility()
-    sideTab.Visible = not sideTab.Visible  -- Toggle the side tab visibility
+-- Function to make the side tab draggable
+local isDragging = false
+local dragInput, mouseDelta, dragStart
+local function startDrag(input)
+    isDragging = true
+    dragStart = input.Position
 end
 
--- Create a button to close the tab (optional)
-local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 50, 0, 50)
-closeButton.Position = UDim2.new(1, -60, 0, 10)
-closeButton.Text = "X"
-closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for close button
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
-closeButton.Font = Enum.Font.SourceSans
-closeButton.TextSize = 24
-closeButton.Parent = sideTab
+local function updateDrag(input)
+    if isDragging then
+        local delta = input.Position - dragStart
+        sideTab.Position = UDim2.new(sideTab.Position.X.Scale, sideTab.Position.X.Offset + delta.X, sideTab.Position.Y.Scale, sideTab.Position.Y.Offset + delta.Y)
+    end
+end
 
--- Function to close the tab by clicking the close button
-closeButton.MouseButton1Click:Connect(function()
-    sideTab.Visible = false  -- Hide the tab when closing it
+local function endDrag()
+    isDragging = false
+end
+
+toggleButton.MouseButton1Down:Connect(startDrag)
+toggleButton.MouseMoved:Connect(updateDrag)
+toggleButton.MouseButton1Up:Connect(endDrag)
+
+-- Toggle visibility of the side tab
+toggleButton.MouseButton1Click:Connect(function()
+    sideTab.Visible = not sideTab.Visible
 end)
 
--- Fly button inside the side tab
+-- Add the Fly button and Random Weapon button inside the side tab
 local flyButton = Instance.new("TextButton")
-flyButton.Size = UDim2.new(0, 200, 0, 50)  -- Button size
-flyButton.Position = UDim2.new(0, 0, 0, 80)  -- Position inside the tab
-flyButton.Text = "Fly"  -- Button text
-flyButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- Green color for fly button
-flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
-flyButton.Font = Enum.Font.SourceSans
-flyButton.TextSize = 24  -- Text size
+flyButton.Size = UDim2.new(0, 180, 0, 50)
+flyButton.Position = UDim2.new(0, 10, 0, 50)
+flyButton.Text = "Fly"
+flyButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- Green button
+flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 flyButton.Parent = sideTab
 
--- Fly function
-local flying = false
-local bodyVelocity = nil
-local bodyGyro = nil
+local randomWeaponButton = Instance.new("TextButton")
+randomWeaponButton.Size = UDim2.new(0, 180, 0, 50)
+randomWeaponButton.Position = UDim2.new(0, 10, 0, 110)
+randomWeaponButton.Text = "Random Weapon"
+randomWeaponButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red button
+randomWeaponButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+randomWeaponButton.Parent = sideTab
 
-local function toggleFly()
-    if flying then
-        -- Disable flying
-        flying = false
-        if bodyVelocity then
-            bodyVelocity:Destroy()
-            bodyVelocity = nil
-        end
-        if bodyGyro then
-            bodyGyro:Destroy()
-            bodyGyro = nil
-        end
-    else
-        -- Enable flying
-        flying = true
-        bodyVelocity = Instance.new("BodyVelocity")
-        bodyGyro = Instance.new("BodyGyro")
-        
-        bodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
-        bodyVelocity.Velocity = Vector3.new(0, 50, 0)
-        bodyVelocity.Parent = character.HumanoidRootPart
-        
-        bodyGyro.MaxTorque = Vector3.new(400000, 400000, 400000)
-        bodyGyro.CFrame = character.HumanoidRootPart.CFrame
-        bodyGyro.Parent = character.HumanoidRootPart
+-- Add teleport to candy button
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(0, 180, 0, 50)
+teleportButton.Position = UDim2.new(0, 10, 0, 170)
+teleportButton.Text = "Teleport to Candy"
+teleportButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)  -- Orange button
+teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+teleportButton.Parent = sideTab
+
+-- Set the cooldown time to 2 seconds
+local cooldownTime = 2  -- Cooldown in seconds
+local canTeleport = true
+
+-- Function to teleport with cooldown
+local function teleportToCandy()
+    if not canTeleport then
+        print("Cooldown active!")
+        return
     end
-end
-
-flyButton.MouseButton1Click:Connect(toggleFly)
-
--- Create a button to give a random weapon
-local weaponButton = Instance.new("TextButton")
-weaponButton.Size = UDim2.new(0, 200, 0, 50)  -- Button size
-weaponButton.Position = UDim2.new(0, 0, 1, -70)  -- Position at the bottom
-weaponButton.Text = "Random Weapon"  -- Button text
-weaponButton.BackgroundColor3 = Color3.fromRGB(255, 255, 0)  -- Yellow color for weapon button
-weaponButton.TextColor3 = Color3.fromRGB(0, 0, 0)  -- Black text color
-weaponButton.Font = Enum.Font.SourceSans
-weaponButton.TextSize = 24  -- Text size
-weaponButton.Parent = sideTab
-
--- Function to give a random weapon
-local function giveRandomWeapon()
-    local weapons = {
-        "Classic Sword",
-        "Flintlock",
-        "Bloxburg Gun"
-    }
     
-    local weapon = weapons[math.random(1, #weapons)]
+    canTeleport = false
+    local candy = game.Workspace:FindFirstChild("Candy")
     
-    -- You can change these to any weapon models you want to add
-    if weapon == "Classic Sword" then
-        local sword = game.ReplicatedStorage:WaitForChild("ClassicSword"):Clone()
-        sword.Parent = player.Backpack
-    elseif weapon == "Flintlock" then
-        local flintlock = game.ReplicatedStorage:WaitForChild("Flintlock"):Clone()
-        flintlock.Parent = player.Backpack
-    elseif weapon == "Bloxburg Gun" then
-        local gun = game.ReplicatedStorage:WaitForChild("BloxburgGun"):Clone()
-        gun.Parent = player.Backpack
-    end
-end
-
-weaponButton.MouseButton1Click:Connect(giveRandomWeapon)
-
--- Listen for key press to toggle the tab visibility (Press F)
-local UIS = game:GetService("UserInputService")
-
-UIS.InputBegan:Connect(function(input, gameProcessed)
-    -- Only respond to the F key and not to other inputs (like in the chat)
-    if input.KeyCode == Enum.KeyCode.F and not gameProcessed then
-        toggleTabVisibility()  -- Toggle visibility of the tab
-    end
-end)
-
--- Make the toggle button draggable
-local dragging, dragInput, mousePos, offset = false, nil, nil, nil
-
-toggleButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        offset = toggleButton.Position - UDim2.new(0, input.Position.X, 0, input.Position.Y)
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
+    if candy then
+        -- Smooth teleportation to candy
+        local candyPosition = candy.Position
+        local characterHumanoidRootPart = player.Character:WaitForChild("HumanoidRootPart")
+        local tweenService = game:GetService("TweenService")
+        
+        -- Create a tween to move the player smoothly to the candy
+        local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+        local goal = {CFrame = CFrame.new(candyPosition)}
+        local tween = tweenService:Create(characterHumanoidRootPart, tweenInfo, goal)
+        
+        tween:Play()
+        tween.Completed:Connect(function()
+            -- After reaching the candy, enable teleportation again
+            wait(cooldownTime)
+            canTeleport = true
         end)
+    else
+        warn("Candy not found.")
+        canTeleport = true
     end
+end
+
+teleportButton.MouseButton1Click:Connect(teleportToCandy)
+
+-- Dummy functions for the Fly and Random Weapon buttons
+flyButton.MouseButton1Click:Connect(function()
+    print("Flying activated!")  -- Placeholder for fly functionality
 end)
 
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if dragging then
-        mousePos = input.Position
-        toggleButton.Position = UDim2.new(0, mousePos.X - offset.X.Offset, 0, mousePos.Y - offset.Y.Offset)
-    end
+randomWeaponButton.MouseButton1Click:Connect(function()
+    print("Random weapon granted!")  -- Placeholder for random weapon functionality
 end)
